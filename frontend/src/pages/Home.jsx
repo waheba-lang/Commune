@@ -405,7 +405,7 @@ const styles = {
 
     // Hero (your style with AI text)
     hero: {
-        padding: '3rem 2rem',
+        padding: '2rem 2rem',
         maxWidth: '1400px',
         margin: '0 auto',
         width: '100%',
@@ -431,21 +431,21 @@ const styles = {
         display: 'inlineBlock',
     },
     heroH2: {
-        fontSize: '1.8rem',
+        fontSize: '1.4rem',
         fontWeight: 400,
         color: '#4a6fa5',
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
     },
     heroDescription: {
         background: 'white',
-        padding: '2rem',
+        padding: '1rem',
         borderRadius: '20px',
         boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
-        margin: '2rem 0',
+        margin: '1rem 0',
         borderLeft: '5px solid #ff8c42',
     },
     heroDescriptionP: {
-        fontSize: '1.2rem',
+        fontSize: '1rem',
         lineHeight: 1.6,
         color: '#2c3e50',
         marginBottom: '1rem',

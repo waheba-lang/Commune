@@ -13,7 +13,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="navbar" style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '2rem 0' }}>
+        <nav className="navbar" style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '0.5rem 0' }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <ShieldCheck size={28} />
