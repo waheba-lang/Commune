@@ -5,7 +5,7 @@ import { MapPin, Tag, User as UserIcon, Calendar } from 'lucide-react';
 const ComplaintCard = ({ complaint }) => {
     const statusClass = `badge badge-${complaint.status.toLowerCase().replace(' ', '-')}`;
     const imageUrl = complaint.image 
-        ? `http://localhost:8000/storage/${complaint.image}` 
+        ? `${import.meta.env.DEV ? 'http://localhost:8000' : ''}/storage/${complaint.image}` 
         : 'https://images.unsplash.com/photo-1590086782957-93c06ef21604?auto=format&fit=crop&q=80&w=400';
 
     return (
