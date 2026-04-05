@@ -13,12 +13,20 @@ class Complaint extends Model
         'title',
         'city',
         'address',
+        'latitude',
+        'longitude',
         'category',
         'description',
         'image',
         'status',
+        'internal_note',
         'user_id',
     ];
+
+    public function history()
+    {
+        return $this->hasMany(ComplaintHistory::class)->latest();
+    }
 
     public function user()
     {

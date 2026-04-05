@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 
+use App\Http\Resources\UserResource;
+
 class AdminController extends Controller
 {
     // Get stats
@@ -24,7 +26,7 @@ class AdminController extends Controller
     // Get all users
     public function users()
     {
-        return response()->json(User::all());
+        return UserResource::collection(User::all());
     }
 
     // Update user role etc
@@ -42,7 +44,7 @@ class AdminController extends Controller
         
         $user->save();
 
-        return response()->json($user);
+        return new UserResource($user);
     }
 
     // Delete user

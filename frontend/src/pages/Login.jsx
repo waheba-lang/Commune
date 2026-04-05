@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,18 +21,20 @@ const Login = () => {
             await login(email, password);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Identifiants incorrects');
+            console.error('Login error:', err.response?.data);
+            const msg = err.response?.data?.message || err.response?.data?.error || t('login_error', { defaultValue: 'Identifiants incorrects' });
+            setError(msg);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
+        <div className="auth-container" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
             <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem' }}>
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#1e3c72' }}>Connexion</h2>
-                    <p style={{ color: '#ff8c42', marginTop: '0.5rem' }}>Bon retour parmi nous</p>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#1e3c72' }}>{t('login')}</h2>
+                    <p style={{ color: '#ff8c42', marginTop: '0.5rem' }}>{t('welcome_back', { defaultValue: 'Bon retour parmi nous' })}</p>
                 </div>
 
                 {error && (
@@ -57,7 +61,7 @@ const Login = () => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: '500' }}>Mot de passe</label>
+                        <label style={{ fontSize: '0.875rem', fontWeight: '500' }}>{t('password')}</label>
                         <div style={{ position: 'relative' }}>
                             <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
                             <input
@@ -72,12 +76,12 @@ const Login = () => {
                     </div>
 
                     <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#1e3c72' }}>
-                        {loading ? 'Connexion en cours...' : 'Se connecter'}
+                        {loading ? t('connecting', { defaultValue: 'Connexion en cours...' }) : t('login')}
                     </button>
                 </form>
 
                 <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                    Pas encore de compte ? <Link to="/register" style={{ color: '#1e3c72', fontWeight: '600' }}>S'inscrire</Link>
+                    {t('no_account', { defaultValue: 'Pas encore de compte ?' })} <Link to="/register" style={{ color: '#1e3c72', fontWeight: '600' }}>{t('register')}</Link>
                 </p>
             </div>
         </div>

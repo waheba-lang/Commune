@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+use App\Http\Resources\UserResource;
+
 class AuthController extends Controller
 {
     public function register(Request $request)
@@ -37,7 +39,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -51,9 +53,10 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return response()->json([
+                'message' => __('auth.failed'),
+                'errors' => ['email' => [__('auth.failed')]]
+            ], 422);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -61,7 +64,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -74,6 +77,32 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        return new UserResource($request->user());
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string',
+            'address' => 'sometimes|string',
+            'password' => 'sometimes|string|min:8|confirmed',
+        ]);
+
+        if ($request->has('first_name')) $user->first_name = $request->first_name;
+        if ($request->has('last_name')) $user->last_name = $request->last_name;
+        if ($request->has('phone')) $user->phone = $request->phone;
+        if ($request->has('address')) $user->address = $request->address;
+        
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return new UserResource($user);
     }
 }

@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Models\ComplaintHistory;
+use App\Http\Resources\ComplaintResource;
+use App\Mail\ComplaintSubmitted;
+use App\Mail\ComplaintResolved;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class ComplaintController extends Controller
 {
     public function index()
     {
-        return Complaint::with('user')->latest()->get();
+        return ComplaintResource::collection(Complaint::with(['user', 'history.user'])->latest()->get());
     }
 
     public function store(Request $request)
@@ -19,6 +24,8 @@ class ComplaintController extends Controller
             'title' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'address' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'category' => 'required|string',
             'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -33,6 +40,8 @@ class ComplaintController extends Controller
             'title' => $request->title,
             'city' => $request->city,
             'address' => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
             'category' => $request->category,
             'description' => $request->description,
             'image' => $imagePath,
@@ -40,17 +49,28 @@ class ComplaintController extends Controller
             'status' => 'Pending',
         ]);
 
-        return response()->json($complaint, 201);
+        // Create initial history record
+        ComplaintHistory::create([
+            'complaint_id' => $complaint->id,
+            'user_id' => $request->user()->id,
+            'status' => 'Pending',
+            'note' => 'Complaint submitted by citizen.',
+        ]);
+
+        // Send confirmation email
+        Mail::to($request->user()->email)->send(new ComplaintSubmitted($complaint->load('user')));
+
+        return new ComplaintResource($complaint->load(['user', 'history.user']));
     }
 
     public function show($id)
     {
-        return Complaint::with('user')->findOrFail($id);
+        return new ComplaintResource(Complaint::with(['user', 'history.user'])->findOrFail($id));
     }
 
     public function myComplaints(Request $request)
     {
-        return Complaint::where('user_id', $request->user()->id)->latest()->get();
+        return ComplaintResource::collection(Complaint::where('user_id', $request->user()->id)->latest()->get());
     }
 
     public function update(Request $request, $id)
@@ -63,11 +83,33 @@ class ComplaintController extends Controller
 
         $request->validate([
             'status' => 'required|in:Pending,In Progress,Resolved',
+            'internal_note' => 'nullable|string',
+            'history_note' => 'nullable|string',
         ]);
 
-        $complaint->update(['status' => $request->status]);
+        $oldStatus = $complaint->status;
+        
+        $complaint->update([
+            'status' => $request->status,
+            'internal_note' => $request->internal_note ?? $complaint->internal_note,
+        ]);
 
-        return response()->json($complaint);
+        // Log history if status changed or note provided
+        if ($oldStatus !== $request->status || $request->history_note) {
+            ComplaintHistory::create([
+                'complaint_id' => $complaint->id,
+                'user_id' => $request->user()->id,
+                'status' => $request->status,
+                'note' => $request->history_note ?? "Status changed from {$oldStatus} to {$request->status}.",
+            ]);
+        }
+
+        // Send resolution email if status changed to Resolved
+        if ($oldStatus !== 'Resolved' && $request->status === 'Resolved') {
+            Mail::to($complaint->user->email)->send(new ComplaintResolved($complaint->load('user')));
+        }
+
+        return new ComplaintResource($complaint->load(['user', 'history.user']));
     }
 
     public function destroy(Request $request, $id)

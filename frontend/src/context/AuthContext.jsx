@@ -13,7 +13,9 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 try {
                     const response = await api.get('/user');
-                    setUser(response.data);
+                    // backend: return new UserResource($request->user());
+                    // which means: response.data.data
+                    setUser(response.data.data || response.data);
                 } catch (error) {
                     console.error('Failed to fetch user', error);
                     localStorage.removeItem('token');
@@ -27,13 +29,15 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         const response = await api.post('/login', { email, password });
         localStorage.setItem('token', response.data.access_token);
-        setUser(response.data.user);
+        // backend: 'user' => new UserResource($user)
+        // which means: response.data.user.data
+        setUser(response.data.user?.data || response.data.user);
     };
 
     const register = async (userData) => {
         const response = await api.post('/register', userData);
         localStorage.setItem('token', response.data.access_token);
-        setUser(response.data.user);
+        setUser(response.data.user?.data || response.data.user);
     };
 
     const logout = async () => {

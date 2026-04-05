@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import ComplaintCard from '../components/ComplaintCard';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ComplaintsList = () => {
+    const { t } = useTranslation();
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +15,7 @@ const ComplaintsList = () => {
         const fetchComplaints = async () => {
             try {
                 const response = await api.get('/complaints');
-                setComplaints(response.data);
+                setComplaints(response.data.data || []);
             } catch (error) {
                 console.error('Error fetching complaints', error);
             } finally {
@@ -24,56 +26,72 @@ const ComplaintsList = () => {
     }, []);
 
     const filteredComplaints = complaints.filter(c => {
-        const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.city.toLowerCase().includes(searchTerm.toLowerCase());
+        const title = c.title ? c.title.toLowerCase() : '';
+        const city = c.city ? c.city.toLowerCase() : '';
+        const search = searchTerm.toLowerCase();
+        const matchesSearch = title.includes(search) || city.includes(search);
         const matchesCategory = selectedCategory === 'All' || c.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
     return (
-        <div className="container" style={{ padding: '3rem 0' }}>
-            <div style={{ marginBottom: '3rem' }}>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Toutes les réclamations</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Consultez les problèmes signalés par les citoyens dans tout le pays.</p>
+        <div className="container" style={{ padding: '4rem 0' }}>
+            <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1rem', letterSpacing: '-0.02em' }}>
+                    {t('all_complaints_title')}
+                </h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+                    {t('all_complaints_desc')}
+                </p>
             </div>
 
             {/* Filters */}
-            <div className="card" style={{ padding: '1.5rem', marginBottom: '3rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '250px', position: 'relative' }}>
-                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+            <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', background: 'white' }}>
+                <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+                    <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input
                         type="text"
-                        placeholder="Rechercher par titre ou ville..."
+                        className="form-input"
+                        placeholder={t('search_placeholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', outline: 'none' }}
+                        style={{ padding: '0.75rem 1rem 0.75rem 3rem', width: '100%', borderRadius: '0.5rem', border: '1px solid #e5e7eb', outline: 'none' }}
                     />
                 </div>
-                <div style={{ width: '200px', position: 'relative' }}>
-                    <Filter size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                <div style={{ width: '240px', position: 'relative' }}>
+                    <SlidersHorizontal size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <select
+                        className="form-input"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', outline: 'none', appearance: 'none' }}
+                        style={{ padding: '0.75rem 1rem 0.75rem 3rem', width: '100%', borderRadius: '0.5rem', border: '1px solid #e5e7eb', outline: 'none', cursor: 'pointer' }}
                     >
-                        <option value="All">Toutes catégories</option>
-                        <option value="roads">Routes</option>
-                        <option value="electricity">Électricité</option>
-                        <option value="water">Eau</option>
-                        <option value="administration">Administration</option>
-                        <option value="other">Autre</option>
+                        <option value="All">{t('all_categories')}</option>
+                        <option value="roads">{t('cat_roads')}</option>
+                        <option value="electricity">{t('cat_electricity')}</option>
+                        <option value="water">{t('cat_water')}</option>
+                        <option value="environment">{t('cat_environment')}</option>
+                        <option value="security">{t('cat_security')}</option>
+                        <option value="other">{t('cat_other')}</option>
                     </select>
                 </div>
             </div>
 
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '3rem' }}>Chargement...</div>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '6rem 0' }}>
+                    <div className="spinner"></div>
+                </div>
             ) : filteredComplaints.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Aucune réclamation trouvée.</div>
+                <div className="card" style={{ textAlign: 'center', padding: '5rem', background: 'transparent', borderStyle: 'dashed' }}>
+                    <div style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('no_results')}</div>
+                    <button className="btn btn-outline" onClick={() => {setSearchTerm(''); setSelectedCategory('All')}}>{t('reset_filters')}</button>
+                </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem' }}>
                     {filteredComplaints.map(complaint => (
-                        <ComplaintCard key={complaint.id} complaint={complaint} />
+                        <div key={complaint.id} className="fade-in">
+                            <ComplaintCard complaint={complaint} />
+                        </div>
                     ))}
                 </div>
             )}

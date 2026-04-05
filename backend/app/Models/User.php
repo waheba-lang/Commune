@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Complaint::class);
     }
+
+    public function documentRequests()
+    {
+        return $this->hasMany(DocumentRequest::class);
+    }
 }
