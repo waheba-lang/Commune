@@ -11,7 +11,6 @@ import ComplaintsList from './pages/ComplaintsList';
 import ComplaintDetails from './pages/ComplaintDetails';
 import AddComplaint from './pages/AddComplaint';
 import MyComplaints from './pages/MyComplaints';
-import ComplaintsMap from './pages/ComplaintsMap';
 import Statistics from './pages/Statistics';
 
 import AdminDashboard from './pages/AdminDashboard';
@@ -45,7 +44,6 @@ function App() {
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/complaints" element={<ComplaintsList />} />
                                 <Route path="/complaints/:id" element={<ComplaintDetails />} />
-                                <Route path="/carte" element={<ComplaintsMap />} />
                                 <Route path="/statistiques" element={<Statistics />} />
 
                                 

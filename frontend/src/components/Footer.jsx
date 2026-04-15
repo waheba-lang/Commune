@@ -31,7 +31,7 @@ const Footer = () => {
       <footer className="footer">
         <div className="footer-container">
           <div className="footer-section">
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '1.8rem', margin: '0 0 1rem 0' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '25px', fontSize: '1.8rem', margin: '0 0 1rem 0' }}>
               <img src="/logo-oujda.jpg" alt="Commune d'Oujda" style={{ height: '65px', borderRadius: '6px', background: 'white', padding: '4px' }} />
               <span style={{ color: '#a5beecff', }}>Recla<span style={{ color: '#ff8c42' }}>Plus</span></span>
             </h3>
